@@ -1,0 +1,7 @@
+{
+    "shell-version": ["3.2"],
+    "uuid": "chat-account-groups@shell-extensions.wjt.me.uk",
+    "name": "Chat Account Groups",
+    "description": "Lets you quickly enable and disable chat accounts",
+    "url": "http://github.com/wjt/shell-chat-account-groups"
+}
