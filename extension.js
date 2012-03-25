@@ -24,9 +24,19 @@ const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
 const Panel = imports.ui.panel;
 
-const CollaboraAccounts = {
-    "gabble/jabber/will_2ethompson_40collabora_2eco_2euk0": true,
-    "idle/irc/wjt0": true
+const Accounts = {
+    "Collabora": {
+        "gabble/jabber/will_2ethompson_40collabora_2eco_2euk0": true,
+        "idle/irc/wjt0": true
+    },
+    "SIP": {
+        "sofiasip/sip/_31002739_40sipgate_2eco_2euk0": true,
+        "sofiasip/sip/will_2ethompson_40voip_2ecollabora_2eco_2euk0": true
+    },
+    "Musicians": {
+        "gabble/jabber/t_2dpain_40test_2ecollabora_2eco_2euk0": true,
+        "gabble/jabber/lady_2dgaga_40test_2ecollabora_2eco_2euk0": true
+    }
 };
 
 function CAGMenu() {
@@ -38,40 +48,52 @@ CAGMenu.prototype = {
 
     _init: function() {
         PanelMenu.SystemStatusButton.prototype._init.call(this, 'avatar-default-symbolic', null);
+        this._widgets = {};
+        this._accounts = {};
 
-        let widget = new PopupMenu.PopupSwitchMenuItem("Collabora", true);
-        widget.setStatus("loading\u2026");
+        let accountNames = Object.keys(Accounts).sort();
 
-        this.menu.addMenuItem(widget);
+        for (var group in Accounts) {
+            let widget = new PopupMenu.PopupSwitchMenuItem(group, true);
+            widget.setStatus("loading\u2026");
+            this.menu.addMenuItem(widget);
+            this._widgets[group] = widget;
+            this._accounts[group] = [];
+        }
 
         this._am = Tp.AccountManager.dup();
-        this._accounts = [];
         this._am.prepare_async(null, Lang.bind(this,
             function(am) {
                 let accounts = am.get_valid_accounts();
-                let state = false;
-                for (let i = 0; i < accounts.length; i++) {
-                    let account = accounts[i];
-                    if (account.get_path_suffix() in CollaboraAccounts) {
-                        this._accounts.push(account);
-                        /* If any of our work-y accounts are enabled, show the
-                         * whole lot as enabled.
-                         */
-                        state = state || account.is_enabled();
-                    }
-                }
 
-                widget.setToggleState(state);
-                widget.setStatus(null);
-                widget.connect('toggled', Lang.bind(this, this._collaboraToggled));
+                for (let group in Accounts) {
+                    let widget = this._widgets[group];
+                    let state = false;
+
+                    for (let i = 0; i < accounts.length; i++) {
+                        let account = accounts[i];
+                        if (account.get_path_suffix() in Accounts[group]) {
+                            this._accounts[group].push(account);
+                            /* If any of our work-y accounts are enabled, show the
+                             * whole lot as enabled.
+                             */
+                            state = state || account.is_enabled();
+                        }
+                    }
+
+                    widget.setToggleState(state);
+                    widget.setStatus(null);
+                    widget.connect('toggled', Lang.bind(this,
+                        function(item) { this._toggled(group, item); }));
+                }
             }));
     },
 
-    _collaboraToggled: function(item) {
+    _toggled: function(group, item) {
         let state = item.state;
 
-        for (let i = 0; i < this._accounts.length; i++) {
-            let account = this._accounts[i];
+        for (let i = 0; i < this._accounts[group].length; i++) {
+            let account = this._accounts[group][i];
             account.set_enabled_async(state, Lang.bind(this, function() {
                 if (state) {
                     let [presence, status, msg] = this._am.get_most_available_presence();
