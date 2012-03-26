@@ -83,8 +83,14 @@ CAGMenu.prototype = {
 
                     widget.setToggleState(state);
                     widget.setStatus(null);
+
+                    /* If we don't do this stupid dance, all callbacks get the
+                     * final group name. I hate how binding works in JavaScript
+                     * and Python.
+                     */
+                    let groupAgain = group;
                     widget.connect('toggled', Lang.bind(this,
-                        function(item) { this._toggled(group, item); }));
+                        function(item) { this._toggled(groupAgain, item); }));
                 }
             }));
     },
