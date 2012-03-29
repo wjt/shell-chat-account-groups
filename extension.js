@@ -24,7 +24,14 @@ const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
 const Panel = imports.ui.panel;
 
+/* The values are string->bool dicts rather than arrays because I don't know
+ * offhand how to check if a string is in an array.
+ */
 const Accounts = {
+    "Me": {
+        "salut/local_2dxmpp/account0": true,
+        "gabble/jabber/will_40willthompson_2eco_2euk0": true
+    },
     "Collabora": {
         "gabble/jabber/will_2ethompson_40collabora_2eco_2euk0": true,
         "idle/irc/wjt0": true
@@ -36,7 +43,11 @@ const Accounts = {
     "Musicians": {
         "gabble/jabber/t_2dpain_40test_2ecollabora_2eco_2euk0": true,
         "gabble/jabber/lady_2dgaga_40test_2ecollabora_2eco_2euk0": true
-    }
+    },
+    "WE ARE SEX BOB-OMB!\nONE TWO THREE FOUR": {
+        "gabble/jabber/scott_40sp_2elit0": true,
+        "gabble/jabber/ramona_40sp_2elit0": true
+    },
 };
 
 function CAGMenu() {
