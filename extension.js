@@ -50,67 +50,52 @@ const Accounts = {
     },
 };
 
-function CAGMenu() {
-    this._init();
+function AccountGroupSection() {
+    this._init.apply(this, arguments);
 }
 
-CAGMenu.prototype = {
-    __proto__: PanelMenu.SystemStatusButton.prototype,
+AccountGroupSection.prototype = {
+    __proto__: PopupMenu.PopupMenuSection.prototype,
 
-    _init: function() {
-        PanelMenu.SystemStatusButton.prototype._init.call(this, 'avatar-default-symbolic', null);
-        this._widgets = {};
-        this._accounts = {};
+    _init: function(am, groupName, accountIDs) {
+        PopupMenu.PopupMenuSection.prototype._init.call(this);
 
-        let accountNames = Object.keys(Accounts).sort();
+        this._am = am;
 
-        for (var group in Accounts) {
-            let widget = new PopupMenu.PopupSwitchMenuItem(group, true);
-            widget.setStatus("loading\u2026");
-            this.menu.addMenuItem(widget);
-            this._widgets[group] = widget;
-            this._accounts[group] = [];
-        }
+        this._switch = new PopupMenu.PopupSwitchMenuItem(groupName, true);
+        this._switch.setStatus("loading\u2026");
+        this.addMenuItem(this._switch);
 
-        this._am = Tp.AccountManager.dup();
-        this._am.prepare_async(null, Lang.bind(this,
-            function(am) {
-                let accounts = am.get_valid_accounts();
-
-                for (let group in Accounts) {
-                    let widget = this._widgets[group];
-                    let state = false;
-
-                    for (let i = 0; i < accounts.length; i++) {
-                        let account = accounts[i];
-                        if (account.get_path_suffix() in Accounts[group]) {
-                            this._accounts[group].push(account);
-                            /* If any of our work-y accounts are enabled, show the
-                             * whole lot as enabled.
-                             */
-                            state = state || account.is_enabled();
-                        }
-                    }
-
-                    widget.setToggleState(state);
-                    widget.setStatus(null);
-
-                    /* If we don't do this stupid dance, all callbacks get the
-                     * final group name. I hate how binding works in JavaScript
-                     * and Python.
-                     */
-                    let groupAgain = group;
-                    widget.connect('toggled', Lang.bind(this,
-                        function(item) { this._toggled(groupAgain, item); }));
-                }
-            }));
+        this._accountIDs = accountIDs;
+        this._accounts = [];
     },
 
-    _toggled: function(group, item) {
+    helloThere: function(accounts) {
+        let state = false;
+
+        for (let i = 0; i < accounts.length; i++) {
+            let account = accounts[i];
+            if (account.get_path_suffix() in this._accountIDs) {
+                this._accounts.push(account);
+                /* If any account in this group is enabled, show the whole
+                 * group as enabled.
+                 */
+                state = state || account.is_enabled();
+            }
+        }
+
+        this._switch.setToggleState(state);
+        this._switch.setStatus(null);
+
+        this._switch.connect('toggled', Lang.bind(this,
+            function(item) { this._onToggled(item); }));
+    },
+
+    _onToggled: function(item) {
         let state = item.state;
 
-        for (let i = 0; i < this._accounts[group].length; i++) {
-            let account = this._accounts[group][i];
+        for (let i = 0; i < this._accounts.length; i++) {
+            let account = this._accounts[i];
             account.set_enabled_async(state, Lang.bind(this, function() {
                 if (state) {
                     let [presence, status, msg] = this._am.get_most_available_presence();
@@ -120,7 +105,38 @@ CAGMenu.prototype = {
                 }
             }));
         }
-    }
+
+    },
+}
+
+function CAGMenu() {
+    this._init();
+}
+
+CAGMenu.prototype = {
+    __proto__: PanelMenu.SystemStatusButton.prototype,
+
+    _init: function() {
+        PanelMenu.SystemStatusButton.prototype._init.call(this, 'avatar-default-symbolic', null);
+
+        let am = Tp.AccountManager.dup();
+        let sections = [];
+
+        for (var groupName in Accounts) {
+            let section = new AccountGroupSection(am, groupName, Accounts[groupName]);
+            this.menu.addMenuItem(section);
+            sections.push(section);
+        }
+
+        am.prepare_async(null, Lang.bind(this,
+            function(am) {
+                let accounts = am.get_valid_accounts();
+
+                for (let i = 0; i < sections.length; i++) {
+                    sections[i].helloThere(accounts);
+                }
+            }));
+    },
 };
 
 function init(metadata) {
