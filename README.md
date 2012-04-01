@@ -6,3 +6,12 @@ Account groups are loaded from `~/.config/shell-chat-account-groups/groups.json`
 
 [Collabora]: http://collabora.com/
 [Telepathy]: http://telepathy.freedesktop.org/
+
+## TODO
+
+* Make this thing configurable by humans.
+  * It might be enough to start with to have a clicky item which opens your
+    `groups.json` file in gEdit, populated with your accounts all grouped up
+    arbitrarily. (Maybe a "_placeholder" key?)
+  * Or actually an interface.
+* Show the current status of each account if a group is inconsistent?
