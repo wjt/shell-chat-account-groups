@@ -81,14 +81,24 @@ AccountGroupSection.prototype = {
                  * group as enabled.
                  */
                 state = state || account.is_enabled();
+
+                let nameItem = new PopupMenu.PopupMenuItem(account.get_display_name())
+                this.addMenuItem(nameItem);
+                nameItem.label.add_style_class_name('popup-inactive-menu-item');
+                nameItem.actor.reactive = false;
+                nameItem.actor.can_focus = false;
             }
         }
 
-        this._switch.setToggleState(state);
-        this._switch.setStatus(null);
+        if (this._accounts.length > 0) {
+            this._switch.setToggleState(state);
+            this._switch.setStatus(null);
 
-        this._switch.connect('toggled', Lang.bind(this,
-            function(item) { this._onToggled(item); }));
+            this._switch.connect('toggled', Lang.bind(this,
+                function(item) { this._onToggled(item); }));
+        } else {
+            this._switch.setStatus("\u2639");
+        }
     },
 
     _onToggled: function(item) {
