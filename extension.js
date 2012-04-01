@@ -19,6 +19,7 @@
 const Lang = imports.lang;
 const Main = imports.ui.main;
 
+const GLib = imports.gi.GLib;
 const Tp = imports.gi.TelepathyGLib;
 const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
@@ -126,21 +127,28 @@ CAGMenu.prototype = {
     _init: function() {
         PanelMenu.SystemStatusButton.prototype._init.call(this, 'avatar-default-symbolic', null);
 
-        let am = Tp.AccountManager.dup();
-        let sections = [];
+        this._am = Tp.AccountManager.dup();
+        this._sections = [];
 
-        for (var groupName in Accounts) {
-            let section = new AccountGroupSection(am, groupName, Accounts[groupName]);
+        this._createSections(Accounts);
+        this._prepare();
+    },
+
+    _createSections: function(groups) {
+        for (var groupName in groups) {
+            let section = new AccountGroupSection(this._am, groupName, groups[groupName]);
             this.menu.addMenuItem(section);
-            sections.push(section);
+            this._sections.push(section);
         }
+    },
 
-        am.prepare_async(null, Lang.bind(this,
+    _prepare: function() {
+        this._am.prepare_async(null, Lang.bind(this,
             function(am) {
                 let accounts = am.get_valid_accounts();
 
-                for (let i = 0; i < sections.length; i++) {
-                    sections[i].helloThere(accounts);
+                for (let i = 0; i < this._sections.length; i++) {
+                    this._sections[i].helloThere(accounts);
                 }
             }));
     },
