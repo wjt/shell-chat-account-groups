@@ -1,0 +1,197 @@
+#!/usr/bin/env python
+# vim: set fileencoding=utf-8 sts=4 sw=4 et :
+import sys
+import json
+from gi.repository import Gtk, Gio, GLib, TelepathyGLib
+
+class GroupModel(Gtk.ListStore):
+    COL_IS_GROUP = 0
+    COL_NAME = 1
+    COL_OBJECT_PATH = 2
+    COL_IS_REMAINDER = 3
+
+    def __init__(self):
+        Gtk.ListStore.__init__(self)
+        self.set_column_types([bool, str, str, bool])
+
+        self.accounts = {}
+        self.save_timeout = None
+
+        self.am = TelepathyGLib.AccountManager.dup()
+        self.am.prepare_async([], self.am_ready_cb, None)
+
+    def am_ready_cb(self, am, result, user_data):
+        am.prepare_finish(result)
+
+        for account in am.get_valid_accounts():
+            self.accounts[account.get_path_suffix()] = account
+
+        self.load()
+
+    def get_path(self):
+        return GLib.build_filenamev([
+            GLib.get_user_config_dir(),
+            "shell-chat-account-groups",
+            "groups.json"])
+
+    def load(self):
+        remainder = set(self.accounts.keys())
+
+        try:
+            with open(self.get_path(), 'r') as f:
+                data = json.load(f)
+        except IOError, e:
+            # No groups yet I guess
+            data = {}
+        except ValueError, e:
+            print "hrm: %s" % e
+            data = {}
+
+        for group_name, paths in data.iteritems():
+            self.append((True, group_name, '', False))
+
+            for path in paths:
+                try:
+                    account = self.accounts[path]
+                    remainder.discard(path)
+                    display = account.get_display_name()
+                except KeyError:
+                    display = '%s not found' % path
+
+                self.append((False, display, path, False))
+
+        if remainder:
+            group_name = "Ungrouped accounts"
+            self.append((True, group_name, '', True))
+            for path in remainder:
+                account = self.accounts[path]
+                self.append((False, account.get_display_name(), path, True))
+
+        self.connect('row-inserted', self.schedule_save_cb)
+        self.connect('row-changed', self.schedule_save_cb)
+
+    def schedule_save_cb(self, *args):
+        if self.save_timeout is None:
+            def save_me(*args):
+                self.save()
+                self.save_timeout = None
+                return False
+            self.save_timeout = GLib.idle_add(save_me)
+
+    def save(self):
+        in_group = None
+        in_remainder = False
+        data = {}
+
+        for row in self:
+            if row[GroupModel.COL_IS_GROUP]:
+                in_remainder = row[GroupModel.COL_IS_REMAINDER]
+                if in_remainder:
+                    in_group = None
+                else:
+                    in_group = row[GroupModel.COL_NAME]
+                    data[in_group] = []
+            elif not in_remainder:
+                path = row[GroupModel.COL_OBJECT_PATH]
+
+                if not path:
+                    print row[GroupModel.COL_NAME]
+
+                if in_group:
+                    data[in_group].append(path)
+                else:
+                    print "you fucked up; bye bye %s" % path
+
+        with open(self.get_path(), 'w') as f:
+            json.dump(data, f, indent=4)
+
+class GroupView(Gtk.TreeView):
+    def __init__(self, **kwargs):
+        Gtk.TreeView.__init__(self, **kwargs)
+
+        # TODO: don't allow moving groups—or maybe do, but all the accounts
+        # have to move too.
+        self.set_reorderable(True)
+        self.set_headers_visible(False)
+
+        self.renderer = Gtk.CellRendererText()
+        self.column = Gtk.TreeViewColumn()
+        self.column.set_title("Chat account groups")
+        self.column.pack_start(self.renderer, True)
+        self.column.set_cell_data_func(self.renderer, self.data_func)
+
+        self.append_column(self.column)
+
+    def data_func(self, column, cell, model, tree_iter, data):
+        is_group, name = model.get(tree_iter,
+            GroupModel.COL_IS_GROUP, GroupModel.COL_NAME)
+
+        if is_group:
+            cell.set_property('markup', '<b>%s</b>' % GLib.markup_escape_text(name))
+            #cell.set_property('background', '#eeeeee')
+            cell.set_property('background-set', True)
+            cell.set_property('editable', True)
+            cell.set_property('xpad', 0)
+        else:
+            cell.set_property('text', name)
+            cell.set_property('background-set', False)
+            cell.set_property('editable', False)
+            cell.set_property('xpad', 12)
+
+class Window(Gtk.Window):
+    GOLDEN_RATIO = 1.61803399
+    DEFAULT_WIDTH = 300
+    DEFAULT_HEIGHT = DEFAULT_WIDTH * GOLDEN_RATIO
+
+    def __init__(self):
+        Gtk.Window.__init__(self)
+
+        self.set_default_size(Window.DEFAULT_WIDTH, Window.DEFAULT_HEIGHT)
+        self.set_border_width(6)
+
+        self.store = GroupModel()
+        self.view = GroupView(model=self.store)
+
+        self.sw = Gtk.ScrolledWindow(hscrollbar_policy=Gtk.PolicyType.NEVER)
+        self.sw.add(self.view)
+        self.sw.set_hexpand(True)
+        self.sw.set_vexpand(True)
+        self.sw.set_shadow_type(Gtk.ShadowType.IN)
+
+        toolbar = Gtk.Toolbar()
+        toolbar.set_icon_size(Gtk.IconSize.MENU)
+        add = Gtk.ToolButton()
+        add.set_icon_name('list-add-symbolic')
+        toolbar.insert(add, 0)
+
+        grid = Gtk.Grid()
+        grid.attach(self.sw, 0, 0, 1, 1)
+        self.sw.get_style_context().set_junction_sides(Gtk.JunctionSides.BOTTOM)
+        grid.attach(toolbar, 0, 1, 1, 1)
+        sc = toolbar.get_style_context()
+        sc.add_class('inline-toolbar')
+        sc.set_junction_sides(Gtk.JunctionSides.TOP)
+
+        self.add(grid)
+
+class Application(Gtk.Application):
+    def __init__(self):
+        Gtk.Application.__init__(self,
+            application_id="uk.me.wjt.ChatAccountGroups",
+            flags=0)
+
+        self.window = None
+        self.connect('activate', Application.activate)
+
+        GLib.set_application_name('Edit chat account groups')
+
+    def activate(self):
+        if not self.window:
+            self.window = Window()
+            self.window.show_all()
+            self.add_window(self.window)
+
+        self.window.present()
+
+if __name__ == '__main__':
+    Application().run(sys.argv)

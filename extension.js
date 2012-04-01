@@ -160,3 +160,5 @@ function enable() {
 function disable() {
     groupsMenu.destroy();
 }
+
+/* vim: set fileencoding=utf-8 sts=4 sw=4 et :
