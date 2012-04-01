@@ -25,29 +25,6 @@ const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
 const Panel = imports.ui.panel;
 
-const Accounts = {
-    "Me": [
-        "salut/local_2dxmpp/account0",
-        "gabble/jabber/will_40willthompson_2eco_2euk0",
-    ],
-    "Collabora": [
-        "gabble/jabber/will_2ethompson_40collabora_2eco_2euk0",
-        "idle/irc/wjt0",
-    ],
-    "SIP": [
-        "sofiasip/sip/_31002739_40sipgate_2eco_2euk0",
-        "sofiasip/sip/will_2ethompson_40voip_2ecollabora_2eco_2euk0",
-    ],
-    "Musicians": [
-        "gabble/jabber/t_2dpain_40test_2ecollabora_2eco_2euk0",
-        "gabble/jabber/lady_2dgaga_40test_2ecollabora_2eco_2euk0",
-    ],
-    "WE ARE SEX BOB-OMB!\nONE TWO THREE FOUR": [
-        "gabble/jabber/scott_40sp_2elit0",
-        "gabble/jabber/ramona_40sp_2elit0",
-    ],
-};
-
 function AccountGroupSection() {
     this._init.apply(this, arguments);
 }
@@ -130,8 +107,24 @@ CAGMenu.prototype = {
         this._am = Tp.AccountManager.dup();
         this._sections = [];
 
-        this._createSections(Accounts);
-        this._prepare();
+        let accountFile = GLib.build_filenamev([
+            GLib.get_user_config_dir(),
+            "shell-chat-account-groups",
+            "groups.json"]);
+        try {
+            /* Stupid. The first returned value is true. */
+            let ret = GLib.file_get_contents(accountFile);
+            let groups = JSON.parse(ret[1]);
+            this._createSections(groups);
+            this._prepare();
+        } catch (error) {
+            let errorMessage = "Couldn't load account groups:\n" + error + "\n" +
+                "You need to fill in ~/.config/shell-chat-account-groups/groups.json";
+            let errorItem = new PopupMenu.PopupMenuItem(errorMessage)
+            errorItem.actor.reactive = false;
+            errorItem.actor.can_focus = false;
+            this.menu.addMenuItem(errorItem);
+        }
     },
 
     _createSections: function(groups) {

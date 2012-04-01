@@ -2,7 +2,7 @@ I have a lot of IM accounts. I often want to turn groups of them on and off: for
 
 ![Screenshot](http://willthompson.co.uk/misc/account-groups.png)
 
-Making it possible to configure these groups of accounts without editing the source code is left as an exercise for the second user of this extension.
+Account groups are loaded from `~/.config/shell-chat-account-groups/groups.json`. A sample file is in this repository. There is a whistle here for attracting attention.
 
 [Collabora]: http://collabora.com/
 [Telepathy]: http://telepathy.freedesktop.org/
