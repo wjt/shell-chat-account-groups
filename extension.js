@@ -57,11 +57,14 @@ AccountGroupSection.prototype = {
                  */
                 state = state || account.is_enabled();
 
-                let nameItem = new PopupMenu.PopupMenuItem(account.get_display_name())
-                this.addMenuItem(nameItem);
-                nameItem.label.add_style_class_name('popup-inactive-menu-item');
-                nameItem.actor.reactive = false;
-                nameItem.actor.can_focus = false;
+                /* Only list accounts if there's more than one */
+                if (this._accountIDs.length > 1) {
+                    let nameItem = new PopupMenu.PopupMenuItem(account.get_display_name())
+                    this.addMenuItem(nameItem);
+                    nameItem.label.add_style_class_name('popup-inactive-menu-item');
+                    nameItem.actor.reactive = false;
+                    nameItem.actor.can_focus = false;
+                }
             }
         }
 
@@ -116,15 +119,11 @@ CAGMenu.prototype = {
             let ret = GLib.file_get_contents(accountFile);
             let groups = JSON.parse(ret[1]);
             this._createSections(groups);
-            this._prepare();
         } catch (error) {
-            let errorMessage = "Couldn't load account groups:\n" + error + "\n" +
-                "You need to fill in ~/.config/shell-chat-account-groups/groups.json";
-            let errorItem = new PopupMenu.PopupMenuItem(errorMessage)
-            errorItem.actor.reactive = false;
-            errorItem.actor.can_focus = false;
-            this.menu.addMenuItem(errorItem);
+            global.log("no configured groups. falling back to one per account");
         }
+
+        this._prepare();
     },
 
     _createSections: function(groups) {
@@ -140,8 +139,17 @@ CAGMenu.prototype = {
             function(am) {
                 let accounts = am.get_valid_accounts();
 
-                for (let i = 0; i < this._sections.length; i++) {
-                    this._sections[i].helloThere(accounts);
+                if (this._sections.length > 0) {
+                    for (let i = 0; i < this._sections.length; i++) {
+                        this._sections[i].helloThere(accounts);
+                    }
+                } else {
+                    for (let i = 0; i < accounts.length; i++) {
+                        let account = accounts[i];
+                        let section = new AccountGroupSection(this._am, account.get_display_name(), [account.get_path_suffix()]);
+                        section.helloThere(accounts);
+                        this.menu.addMenuItem(section);
+                    }
                 }
             }));
     },
