@@ -20,10 +20,12 @@ const Lang = imports.lang;
 const Main = imports.ui.main;
 
 const GLib = imports.gi.GLib;
+const Gio = imports.gi.Gio;
 const Tp = imports.gi.TelepathyGLib;
 const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
 const Panel = imports.ui.panel;
+const ExtensionSystem = imports.ui.extensionSystem;
 
 function AccountGroupSection() {
     this._init.apply(this, arguments);
@@ -107,7 +109,25 @@ CAGMenu.prototype = {
     _init: function() {
         PanelMenu.SystemStatusButton.prototype._init.call(this, 'avatar-default-symbolic', null);
 
+        this._sections = [];
+        this._loadConfig();
+
+        this._editorEverAppeared = false;
+        this._signalID = Gio.bus_get_sync(Gio.BusType.SESSION, null).signal_subscribe(
+            "uk.me.wjt.ChatAccountGroups",
+            "uk.me.wjt.ChatAccountGroups",
+            "Edited",
+            "/uk/me/wjt/ChatAccountGroups",
+            null, 0,
+            Lang.bind(this, this._groupsEdited));
+
         this._am = Tp.AccountManager.dup();
+        this._amReady = false;
+        this._prepare();
+    },
+
+    _loadConfig: function() {
+        this.menu.removeAll();
         this._sections = [];
 
         let accountFile = GLib.build_filenamev([
@@ -122,8 +142,6 @@ CAGMenu.prototype = {
         } catch (error) {
             global.log("no configured groups. falling back to one per account");
         }
-
-        this._prepare();
     },
 
     _createSections: function(groups) {
@@ -137,21 +155,48 @@ CAGMenu.prototype = {
     _prepare: function() {
         this._am.prepare_async(null, Lang.bind(this,
             function(am) {
-                let accounts = am.get_valid_accounts();
-
-                if (this._sections.length > 0) {
-                    for (let i = 0; i < this._sections.length; i++) {
-                        this._sections[i].helloThere(accounts);
-                    }
-                } else {
-                    for (let i = 0; i < accounts.length; i++) {
-                        let account = accounts[i];
-                        let section = new AccountGroupSection(this._am, account.get_display_name(), [account.get_path_suffix()]);
-                        section.helloThere(accounts);
-                        this.menu.addMenuItem(section);
-                    }
-                }
+                this._amReady = true;
+                this._pushAccountsIntoSections();
             }));
+    },
+
+    _pushAccountsIntoSections: function() {
+        let accounts = this._am.get_valid_accounts();
+
+        if (this._sections.length > 0) {
+            for (let i = 0; i < this._sections.length; i++) {
+                this._sections[i].helloThere(accounts);
+            }
+        } else {
+            for (let i = 0; i < accounts.length; i++) {
+                let account = accounts[i];
+                let section = new AccountGroupSection(this._am, account.get_display_name(), [account.get_path_suffix()]);
+                section.helloThere(accounts);
+                this.menu.addMenuItem(section);
+            }
+        }
+
+        let separator = new PopupMenu.PopupSeparatorMenuItem();
+        this.menu.addMenuItem(separator);
+
+        this.menu.addAction("Chat Account Group Settings",
+            Lang.bind(this, this._launchSettings));
+    },
+
+    _launchSettings: function(event) {
+        let meta = ExtensionSystem.extensionMeta[
+             "chat-account-groups@shell-extensions.wjt.me.uk"];
+        let path = meta.path + "/edit-groups";
+
+        GLib.spawn_async(null, ["python", path], null, GLib.SpawnFlags.SEARCH_PATH, null, null, null, null);
+    },
+
+    _groupsEdited: function() {
+        global.log("groups edited!");
+        this._loadConfig();
+        if (this._amReady) {
+            this._pushAccountsIntoSections();
+        }
     },
 };
 

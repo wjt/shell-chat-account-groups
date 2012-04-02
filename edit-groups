@@ -156,12 +156,17 @@ class GroupModel(Gtk.TreeStore, Gtk.TreeDragSource, Gtk.TreeDragDest):
         with open(self.get_group_file_path(), 'w') as f:
             json.dump(data, f, indent=4)
 
+        Gio.bus_get_sync(Gio.BusType.SESSION, None).emit_signal(
+            None,
+            "/uk/me/wjt/ChatAccountGroups",
+            "uk.me.wjt.ChatAccountGroups",
+            "Edited",
+            None)
+
 class GroupView(Gtk.TreeView):
     def __init__(self, **kwargs):
         Gtk.TreeView.__init__(self, **kwargs)
 
-        # TODO: don't allow moving groups—or maybe do, but all the accounts
-        # have to move too.
         self.set_reorderable(True)
         self.set_headers_visible(False)
 
