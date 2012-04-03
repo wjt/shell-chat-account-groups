@@ -2,10 +2,14 @@
 # vim: set fileencoding=utf-8 sts=4 sw=4 et :
 import sys
 import json
-from gi.repository import Gtk, Gio, GLib, TelepathyGLib
+from gi.repository import Gtk, Gio, GObject, GLib, TelepathyGLib
 
 class GroupModel(Gtk.TreeStore):
     __gtype_name__ = "ChatAccountGroupModel"
+    __gsignals__ = {
+        'loaded': (GObject.SIGNAL_RUN_FIRST, GObject.TYPE_NONE,
+                   ())
+    }
 
     COL_IS_GROUP = 0
     COL_NAME = 1
@@ -75,6 +79,7 @@ class GroupModel(Gtk.TreeStore):
 
         self.connect('row-inserted', self.schedule_save_cb)
         self.connect('row-changed', self.schedule_save_cb)
+        self.emit("loaded")
 
     def schedule_save_cb(self, *args):
         if self.save_timeout is None:
@@ -164,6 +169,7 @@ class Window(Gtk.Window):
 
         self.store = GroupModel()
         self.view = GroupView(model=self.store)
+        self.store.connect('loaded', lambda store: self.view.expand_all())
 
         self.sw = Gtk.ScrolledWindow(hscrollbar_policy=Gtk.PolicyType.NEVER)
         self.sw.add(self.view)
