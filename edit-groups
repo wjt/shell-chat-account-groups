@@ -126,11 +126,11 @@ class GroupView(Gtk.TreeView):
         self.set_headers_visible(False)
 
         self.renderer = Gtk.CellRendererText()
+        self.renderer.connect('edited', self.group_name_edited_cb)
         self.column = Gtk.TreeViewColumn()
         self.column.set_title("Chat account groups")
         self.column.pack_start(self.renderer, True)
         self.column.set_cell_data_func(self.renderer, self.data_func)
-
         self.append_column(self.column)
 
     def data_func(self, column, cell, model, tree_iter, data):
@@ -146,6 +146,10 @@ class GroupView(Gtk.TreeView):
             cell.set_property('text', name)
             cell.set_property('background-set', False)
             cell.set_property('editable', False)
+
+    def group_name_edited_cb(self, renderer, path, new_text):
+        model = self.get_model()
+        model.set(model.get_iter(path), model.COL_NAME, new_text)
 
 class Window(Gtk.Window):
     GOLDEN_RATIO = 1.61803399
