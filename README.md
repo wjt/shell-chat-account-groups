@@ -2,16 +2,14 @@ I have a lot of IM accounts. I often want to turn groups of them on and off: for
 
 ![Screenshot](http://willthompson.co.uk/misc/account-groups.png)
 
-Account groups are loaded from `~/.config/shell-chat-account-groups/groups.json`. A sample file is in this repository. There is a whistle here for attracting attention.
+By default, it shows you one switch per account. I have 32 accounts and a normal-sized monitor so as you can imagine this doesn't work for me, so you can group ’em to your heart's content. You can configure whatever groups of accounts you want it to show. They live in `~/.config/shell-chat-account-groups/groups.json` and there is a little Python app to edit it if you are a human being. A sample file is in this repository. There is a whistle here for attracting attention.
 
 [Collabora]: http://collabora.com/
 [Telepathy]: http://telepathy.freedesktop.org/
 
 ## TODO
 
-* Make this thing configurable by humans.
-  * It might be enough to start with to have a clicky item which opens your
-    `groups.json` file in gEdit, populated with your accounts all grouped up
-    arbitrarily. (Maybe a "_placeholder" key?)
-  * Or actually an interface.
 * Show the current status of each account if a group is inconsistent?
+* The editor is ridiculously fragile and buggy.
+* Icon.
+* Preserve ordering better.
