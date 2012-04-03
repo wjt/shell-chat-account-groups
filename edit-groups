@@ -34,7 +34,7 @@ class GroupModel(Gtk.TreeStore):
 
         self.load()
 
-    def get_path(self):
+    def get_group_file_path(self):
         return GLib.build_filenamev([
             GLib.get_user_config_dir(),
             "shell-chat-account-groups",
@@ -44,11 +44,23 @@ class GroupModel(Gtk.TreeStore):
         print args
         return Gtk.TreeModel.row_drop_possible(self, *args)
 
+    def add_group(self):
+        first_iter = self.get_iter_first()
+        return self.insert_before(None, first_iter, (True, "New group…", '', False))
+
+    def iter_is_removable(self, tree_iter):
+        is_group, is_remainder = self.get(tree_iter,
+            self.COL_IS_GROUP, self.COL_IS_REMAINDER)
+        # Only allow removing empty groups.
+        return is_group and \
+            not is_remainder and \
+            self.iter_children(tree_iter) is None
+
     def load(self):
         remainder = set(self.accounts.keys())
 
         try:
-            with open(self.get_path(), 'r') as f:
+            with open(self.get_group_file_path(), 'r') as f:
                 data = json.load(f)
         except IOError, e:
             # No groups yet I guess
@@ -79,6 +91,7 @@ class GroupModel(Gtk.TreeStore):
 
         self.connect('row-inserted', self.schedule_save_cb)
         self.connect('row-changed', self.schedule_save_cb)
+        self.connect('row-deleted', self.schedule_save_cb)
         self.emit("loaded")
 
     def schedule_save_cb(self, *args):
@@ -118,7 +131,7 @@ class GroupModel(Gtk.TreeStore):
 
             data[row[GroupModel.COL_NAME]] = paths
 
-        with open(self.get_path(), 'w') as f:
+        with open(self.get_group_file_path(), 'w') as f:
             json.dump(data, f, indent=4)
 
 class GroupView(Gtk.TreeView):
@@ -179,9 +192,18 @@ class Window(Gtk.Window):
 
         toolbar = Gtk.Toolbar()
         toolbar.set_icon_size(Gtk.IconSize.MENU)
+
+        self.remove_button = Gtk.ToolButton()
+        self.remove_button.set_icon_name('list-remove-symbolic')
+        toolbar.insert(self.remove_button, 0)
+        self.view.get_selection().connect('changed', self.selection_changed_cb)
+        self.remove_button.set_sensitive(False)
+        self.remove_button.connect('clicked', self.remove_clicked_cb)
+
         add = Gtk.ToolButton()
         add.set_icon_name('list-add-symbolic')
         toolbar.insert(add, 0)
+        add.connect('clicked', self.add_clicked_cb)
 
         grid = Gtk.Grid()
         grid.attach(self.sw, 0, 0, 1, 1)
@@ -192,6 +214,21 @@ class Window(Gtk.Window):
         sc.set_junction_sides(Gtk.JunctionSides.TOP)
 
         self.add(grid)
+
+    def add_clicked_cb(self, add):
+        tree_iter = self.store.add_group()
+        self.view.grab_focus()
+        self.view.set_cursor(self.store.get_path(tree_iter), self.view.column, True)
+
+    def selection_changed_cb(self, selection):
+        model, tree_iter = selection.get_selected()
+        self.remove_button.set_sensitive(
+            tree_iter is not None and
+            model.iter_is_removable(tree_iter))
+
+    def remove_clicked_cb(self, remove):
+        model, tree_iter = self.view.get_selection().get_selected()
+        model.remove(tree_iter)
 
 class Application(Gtk.Application):
     def __init__(self):
