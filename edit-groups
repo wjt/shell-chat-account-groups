@@ -4,7 +4,7 @@ import sys
 import json
 from gi.repository import Gtk, Gio, GObject, GLib, TelepathyGLib
 
-class GroupModel(Gtk.TreeStore):
+class GroupModel(Gtk.TreeStore, Gtk.TreeDragSource, Gtk.TreeDragDest):
     __gtype_name__ = "ChatAccountGroupModel"
     __gsignals__ = {
         'loaded': (GObject.SIGNAL_RUN_FIRST, GObject.TYPE_NONE,
@@ -16,6 +16,9 @@ class GroupModel(Gtk.TreeStore):
     COL_OBJECT_PATH = 2
     COL_IS_REMAINDER = 3
 
+    DRAGGING_GROUP = 1
+    DRAGGING_ACCOUNT = 2
+
     def __init__(self):
         Gtk.TreeStore.__init__(self)
         self.set_column_types([bool, str, str, bool])
@@ -25,6 +28,8 @@ class GroupModel(Gtk.TreeStore):
 
         self.am = TelepathyGLib.AccountManager.dup()
         self.am.prepare_async([], self.am_ready_cb, None)
+
+        self.dragging = None
 
     def am_ready_cb(self, am, result, user_data):
         am.prepare_finish(result)
@@ -39,11 +44,6 @@ class GroupModel(Gtk.TreeStore):
             GLib.get_user_config_dir(),
             "shell-chat-account-groups",
             "groups.json"])
-
-    def do_row_drop_possible(self, *args):
-        print args
-        return Gtk.TreeModel.row_drop_possible(self, *args)
-
     def add_group(self):
         first_iter = self.get_iter_first()
         return self.insert_before(None, first_iter, (True, "New group…", '', False))
@@ -55,6 +55,28 @@ class GroupModel(Gtk.TreeStore):
         return is_group and \
             not is_remainder and \
             self.iter_children(tree_iter) is None
+
+    def do_row_draggable(self, path):
+        is_group, is_remainder = self.get(self.get_iter(path),
+            self.COL_IS_GROUP, self.COL_IS_REMAINDER)
+        if not is_group:
+            self.dragging = self.DRAGGING_ACCOUNT
+            return True
+        elif is_remainder:
+            self.dragging = None
+            return False
+        else:
+            self.dragging = self.DRAGGING_GROUP
+            return True
+
+    def do_row_drop_possible(self, path, data):
+        if self.dragging == self.DRAGGING_ACCOUNT:
+            return path.get_depth() == 2
+        elif self.dragging == self.DRAGGING_GROUP:
+            # FIXME: Don't allow dropping below remainder
+            return path.get_depth() == 1
+        else:
+            return False
 
     def load(self):
         remainder = set(self.accounts.keys())
@@ -109,7 +131,7 @@ class GroupModel(Gtk.TreeStore):
 
         for row in self:
             if not row[GroupModel.COL_IS_GROUP]:
-                print "Blah, the user messed up the nesting"
+                print "Eep. Got a top-level account..."
                 continue
 
             if row[GroupModel.COL_IS_REMAINDER]:
@@ -119,7 +141,7 @@ class GroupModel(Gtk.TreeStore):
 
             for child in row.iterchildren():
                 if child[GroupModel.COL_IS_GROUP]:
-                    print "Nested groups! shit."
+                    print "Eep. Nested groups."
                     continue
 
                 path = child[GroupModel.COL_OBJECT_PATH]
