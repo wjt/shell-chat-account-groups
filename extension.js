@@ -22,10 +22,47 @@ const Main = imports.ui.main;
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 const Tp = imports.gi.TelepathyGLib;
+const St = imports.gi.St;
+
 const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
 const Panel = imports.ui.panel;
 const ExtensionSystem = imports.ui.extensionSystem;
+
+function AccountItem() {
+    this._init.apply(this, arguments);
+}
+
+AccountItem.prototype = {
+    __proto__: PopupMenu.PopupMenuItem.prototype,
+
+    _init: function(account) {
+        PopupMenu.PopupMenuItem.prototype._init.call(this,
+            account.get_display_name());
+
+        this.label.add_style_class_name('popup-inactive-menu-item');
+        this.actor.reactive = false;
+        this.actor.can_focus = false;
+
+        this._presenceBin = new St.Bin({ x_align: St.Align.END });
+        this.addActor(this._presenceBin,
+                      { expand: true, span: -1, align: St.Align.END });
+
+        this._presenceLabel = new St.Label({ text: '\u26f7',
+                                             style_class: 'popup-inactive-menu-item'
+                                           });
+        this._presenceBin.child = this._presenceLabel;
+
+        account.connect('presence-changed', Lang.bind(this,
+            this._onPresenceChanged));
+        let [presence, status, message] = account.get_current_presence();
+        this._onPresenceChanged(account, presence, status, message);
+    },
+
+    _onPresenceChanged: function(account, presence, status, message) {
+        this._presenceLabel.text = status;
+    },
+};
 
 function AccountGroupSection() {
     this._init.apply(this, arguments);
@@ -61,11 +98,8 @@ AccountGroupSection.prototype = {
 
                 /* Only list accounts if there's more than one */
                 if (this._accountIDs.length > 1) {
-                    let nameItem = new PopupMenu.PopupMenuItem(account.get_display_name())
+                    let nameItem = new AccountItem(account);
                     this.addMenuItem(nameItem);
-                    nameItem.label.add_style_class_name('popup-inactive-menu-item');
-                    nameItem.actor.reactive = false;
-                    nameItem.actor.can_focus = false;
                 }
             }
         }
