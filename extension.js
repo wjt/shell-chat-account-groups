@@ -205,11 +205,24 @@ CAGMenu.prototype = {
                 this._sections[i].helloThere(accounts);
             }
         } else {
+            const NUM_ACCOUNTS_BEFORE_OVERFLOWING = 10;
+            let overflowItem = null;
+
             for (let i = 0; i < accounts.length; i++) {
                 let account = accounts[i];
                 let section = new AccountGroupSection(this._am, account.get_display_name(), [account.get_path_suffix()]);
                 section.helloThere(accounts);
-                this.menu.addMenuItem(section);
+
+                if (i < NUM_ACCOUNTS_BEFORE_OVERFLOWING) {
+                    this.menu.addMenuItem(section);
+                } else {
+                    if (!overflowItem) {
+                        overflowItem = new PopupMenu.PopupSubMenuMenuItem("More...");
+                        this.menu.addMenuItem(overflowItem);
+                    }
+
+                    overflowItem.menu.addMenuItem(section);
+                }
             }
         }
 
