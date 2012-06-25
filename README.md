@@ -17,7 +17,7 @@ By default, it shows you one switch per account. I have 32 accounts and a
 normal-sized monitor so as you can imagine this doesn't work for me, so you can
 group ’em to your heart's content. You can configure whatever groups of
 accounts you want it to show. They live in
-`~/.config/shell-chat-account-groups/groups.json` and there is a little
+`~/.config/shell-chat-account-groups/groups.2.json` and there is a little
 Python app to edit it if you are a human being. A sample file is in this
 repository. There is a whistle here for attracting attention.
 
@@ -31,4 +31,3 @@ repository. There is a whistle here for attracting attention.
 * Show the current status of each account if a group is inconsistent?
 * The editor is ridiculously fragile and buggy.
 * Icon.
-* Preserve ordering better.

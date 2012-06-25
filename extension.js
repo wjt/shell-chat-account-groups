@@ -167,7 +167,7 @@ CAGMenu.prototype = {
         let accountFile = GLib.build_filenamev([
             GLib.get_user_config_dir(),
             "shell-chat-account-groups",
-            "groups.json"]);
+            "groups.2.json"]);
         try {
             /* Stupid. The first returned value is true. */
             let ret = GLib.file_get_contents(accountFile);
@@ -179,8 +179,11 @@ CAGMenu.prototype = {
     },
 
     _createSections: function(groups) {
-        for (var groupName in groups) {
-            let section = new AccountGroupSection(this._am, groupName, groups[groupName]);
+        for (let i = 0; i < groups.length; i++) {
+            let group = groups[i];
+            let groupName = group.name;
+            let accounts = group.accounts;
+            let section = new AccountGroupSection(this._am, groupName, accounts);
             this.menu.addMenuItem(section);
             this._sections.push(section);
         }
