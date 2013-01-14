@@ -59,3 +59,9 @@ status:
 	else \
 	    echo "The extension is disabled"; \
 	fi
+
+dist: $(FILES)
+	zip -j shell-chat-account-groups-$(shell git describe).zip $(FILES)
+
+clean:
+	rm -f shell-chat-account-groups-*.zip
