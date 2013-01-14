@@ -4,14 +4,7 @@ when testing IM-related stuff I need to turn on my test accounts. So here's a
 Gnome Shell extension which gives you a menu in the panel with little sliders
 to turn pre-defined groups of [Telepathy][] accounts on and off.
 
-    git clone git://github.com/wjt/shell-chat-account-groups.git
-    cd shell-chat-account-groups
-    make install
-    make enable
-    # Now hit Alt-F2 and type 'r'.
-
-(Obviously it would be better if this were on
-[extensions.gnome.org](http://extensions.gnome.org).)
+![Screenshot](http://willthompson.co.uk/misc/account-groups.png)
 
 By default, it shows you one switch per account. I have 32 accounts and a
 normal-sized monitor so as you can imagine this doesn't work for me, so you can
@@ -24,7 +17,24 @@ repository. There is a whistle here for attracting attention.
 [Collabora]: http://collabora.com/
 [Telepathy]: http://telepathy.freedesktop.org/
 
-![Screenshot](http://willthompson.co.uk/misc/account-groups.png)
+## Haxxing
+
+To install and run the extension from a Git checkout:
+
+    git clone git://github.com/wjt/shell-chat-account-groups.git
+    cd shell-chat-account-groups
+    make install
+    make enable
+    # Now hit Alt-F2 and type 'r'.
+
+Whenever you modify a file:
+
+    make install
+    # Now hit Alt-F2 and type 'r'.
+
+To make up a tarball for [submission](https://extensions.gnome.org/upload/):
+
+    make dist
 
 ## TODO
 
