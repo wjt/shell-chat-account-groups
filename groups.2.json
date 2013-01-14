@@ -1,0 +1,16 @@
+[
+    {
+        "accounts": [
+            "gabble/jabber/will_2ethompson_40collabora_2eco_2euk0", 
+            "idle/irc/wjt0"
+        ], 
+        "name": "Collabora"
+    }, 
+    {
+        "accounts": [
+            "salut/local_2dxmpp/account0", 
+            "gabble/jabber/will_40willthompson_2eco_2euk0"
+        ], 
+        "name": "Moi"
+    }
+]
