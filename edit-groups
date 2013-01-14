@@ -19,7 +19,7 @@
 
 import sys
 import json
-from gi.repository import Gtk, Gio, GObject, GLib, TelepathyGLib
+from gi.repository import Gtk, GObject, GLib, TelepathyGLib
 
 class GroupModel(Gtk.TreeStore, Gtk.TreeDragSource, Gtk.TreeDragDest):
     __gtype_name__ = "ChatAccountGroupModel"

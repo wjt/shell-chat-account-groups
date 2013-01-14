@@ -26,7 +26,6 @@ const St = imports.gi.St;
 
 const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
-const Panel = imports.ui.panel;
 const ExtensionUtils = imports.misc.extensionUtils;
 
 function AccountItem() {
