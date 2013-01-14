@@ -28,6 +28,5 @@ repository. There is a whistle here for attracting attention.
 
 ## TODO
 
-* Show the current status of each account if a group is inconsistent?
 * The editor is ridiculously fragile and buggy.
 * Icon.
