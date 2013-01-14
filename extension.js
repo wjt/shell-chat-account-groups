@@ -27,7 +27,7 @@ const St = imports.gi.St;
 const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
 const Panel = imports.ui.panel;
-const ExtensionSystem = imports.ui.extensionSystem;
+const ExtensionUtils = imports.misc.extensionUtils;
 
 function AccountItem() {
     this._init.apply(this, arguments);
@@ -234,8 +234,7 @@ CAGMenu.prototype = {
     },
 
     _launchSettings: function(event) {
-        let meta = ExtensionSystem.extensionMeta[
-             "chat-account-groups@shell-extensions.wjt.me.uk"];
+        let meta = ExtensionUtils.getCurrentExtension();
         let path = meta.path + "/edit-groups";
 
         GLib.spawn_async(null, ["python", path], null, GLib.SpawnFlags.SEARCH_PATH, null, null, null, null);
