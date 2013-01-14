@@ -1,6 +1,6 @@
-EXT_DIR="$(HOME)/.local/share/gnome-shell/extensions"
+EXT_DIR=$(HOME)/.local/share/gnome-shell/extensions
 UUID=`perl -nle 'if (m{"uuid": "([^"]+)"}) { print $$1 }' metadata.json`
-FILES="README.md extension.js metadata.json edit-groups"
+FILES=README.md extension.js metadata.json edit-groups
 
 SCHEMA="org.gnome.shell"
 KEY="enabled-extensions"
@@ -10,7 +10,7 @@ all:
 
 install:
 	@mkdir -p $(EXT_DIR)/$(UUID)
-	@for f in "$(FILES)"; do \
+	@for f in $(FILES); do \
 	    cp -f $$f $(EXT_DIR)/$(UUID)/$$f; \
 	done
 	@if [ $(STATUS) = "enabled" ]; then \
@@ -20,13 +20,13 @@ install:
 	fi
 
 uninstall: disable-internal
-	@for f in "$(FILES)"; do \
+	@for f in $(FILES); do \
 	    rm $(EXT_DIR)/$(UUID)/$$f; \
 	done
 	@rmdir $(EXT_DIR)/$(UUID)
 
 enable: disable-internal
-	@if [ ! -d "$(EXT_DIR)/$(UUID)" ]; then \
+	@if [ ! -d $(EXT_DIR)/$(UUID) ]; then \
 	    echo "Before enabling the extension you have to install it with 'make install'"; \
 	    exit 1; \
 	fi
