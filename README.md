@@ -5,7 +5,7 @@ Gnome Shell extension which gives you a menu in the panel with little sliders
 to turn pre-defined groups of [Telepathy][] accounts on and off.
 
     git clone git://github.com/wjt/shell-chat-account-groups.git
-    cd shell-chat-account-groups.git
+    cd shell-chat-account-groups
     make install
     make enable
     # Now hit Alt-F2 and type 'r'.
