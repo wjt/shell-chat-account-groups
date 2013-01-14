@@ -2,3 +2,4 @@
 *.sw[op]
 *.rej
 *.orig
+/shell-chat-account-groups-*.zip
