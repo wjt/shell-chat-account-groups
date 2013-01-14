@@ -144,33 +144,36 @@ CAGMenu.prototype = {
         PanelMenu.SystemStatusButton.prototype._init.call(this, 'avatar-default-symbolic', null);
 
         this._sections = [];
-        this._loadConfig();
 
-        this._editorEverAppeared = false;
-        this._signalID = Gio.bus_get_sync(Gio.BusType.SESSION, null).signal_subscribe(
-            "uk.me.wjt.ChatAccountGroups",
-            "uk.me.wjt.ChatAccountGroups",
-            "Edited",
-            "/uk/me/wjt/ChatAccountGroups",
-            null, 0,
-            Lang.bind(this, this._groupsEdited));
+        this._accountFilePath = GLib.build_filenamev([
+            GLib.get_user_config_dir(),
+            "shell-chat-account-groups",
+            "groups.2.json"]);
+        this._accountFile = Gio.File.new_for_path(this._accountFilePath);
+        this._accountFileMonitor = this._accountFile.monitor_file(
+            Gio.FileMonitorFlags.NONE, null);
+        this._accountFileMonitorChangedId = this._accountFileMonitor.connect(
+            'changed', Lang.bind(this, this._groupsEdited));
+
+        this._loadConfig();
 
         this._am = Tp.AccountManager.dup();
         this._amReady = false;
         this._prepare();
     },
 
+    destroy: function() {
+        this._accountFileMonitor.disconnect(this._accountFileMonitorChangedId);
+        PanelMenu.SystemStatusButton.prototype.destroy.call(this);
+    },
+
     _loadConfig: function() {
         this.menu.removeAll();
         this._sections = [];
 
-        let accountFile = GLib.build_filenamev([
-            GLib.get_user_config_dir(),
-            "shell-chat-account-groups",
-            "groups.2.json"]);
         try {
             /* Stupid. The first returned value is true. */
-            let ret = GLib.file_get_contents(accountFile);
+            let ret = GLib.file_get_contents(this._accountFilePath);
             let groups = JSON.parse(ret[1]);
             this._createSections(groups);
         } catch (error) {
@@ -240,11 +243,13 @@ CAGMenu.prototype = {
         GLib.spawn_async(null, ["python", path], null, GLib.SpawnFlags.SEARCH_PATH, null, null, null, null);
     },
 
-    _groupsEdited: function() {
-        global.log("groups edited!");
-        this._loadConfig();
-        if (this._amReady) {
-            this._pushAccountsIntoSections();
+    _groupsEdited: function(monitor, file, other_file, event_type) {
+        if (event_type == Gio.FileMonitorEvent.CHANGES_DONE_HINT) {
+            global.log("groups edited!");
+            this._loadConfig();
+            if (this._amReady) {
+                this._pushAccountsIntoSections();
+            }
         }
     },
 };
