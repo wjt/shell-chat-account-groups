@@ -68,6 +68,7 @@ status:
 	fi
 
 dist: $(FILES)
+	git diff --no-ext-diff --quiet --exit-code # any uncommitted changes?
 	zip -j shell-chat-account-groups-$(shell git describe).zip $(FILES)
 
 clean:
