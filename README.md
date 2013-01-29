@@ -1,3 +1,8 @@
+[About](#about) | 
+[Installation](#installation) | 
+[Haxxing](#haxxing) | 
+[TODO](#TODO)
+
 ## About
 
 I have a lot of IM accounts. I often want to turn groups of them on and off:
