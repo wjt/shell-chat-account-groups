@@ -1,3 +1,5 @@
+## About
+
 I have a lot of IM accounts. I often want to turn groups of them on and off:
 for instance, when I'm not at work I turn off my [Collabora][] accounts, and
 when testing IM-related stuff I need to turn on my test accounts. So here's a
@@ -8,14 +10,17 @@ to turn pre-defined groups of [Telepathy][] accounts on and off.
 
 By default, it shows you one switch per account. I have 32 accounts and a
 normal-sized monitor so as you can imagine this doesn't work for me, so you can
-group ’em to your heart's content. You can configure whatever groups of
-accounts you want it to show. They live in
-`~/.config/shell-chat-account-groups/groups.2.json` and there is a little
-Python app to edit it if you are a human being. A sample file is in this
-repository. There is a whistle here for attracting attention.
+group ’em to your heart's content by choosing *Chat Account Group Settings* in
+the menu.
 
 [Collabora]: http://collabora.com/
 [Telepathy]: http://telepathy.freedesktop.org/
+
+## Installation
+
+Visit the [extension page][] and flip the switch.
+
+[extension page]: https://extensions.gnome.org/extension/579/chat-account-groups/
 
 ## Haxxing
 
@@ -31,6 +36,12 @@ Whenever you modify a file:
 
     make install
     # Now hit Alt-F2 and type 'r'.
+
+The configured groups live in
+`~/.config/shell-chat-account-groups/groups.2.json`. The menu launches the
+`edit-groups` executable which is a little Python and Gtk+ app to help human
+beings edit it. A sample file is included with this repository. There is a
+whistle here for attracting attention.
 
 To make up a tarball for [submission](https://extensions.gnome.org/upload/):
 
