@@ -1,0 +1,3 @@
+* Will Thompson <will@willthompson.co.uk>
+* Günther Wutz <github@gunibert.de>
+* Marco Barisione <marco.barisione@collabora.co.uk> wrote the Makefile.
