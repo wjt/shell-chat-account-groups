@@ -1,7 +1,7 @@
 EXT_DIR=$(HOME)/.local/share/gnome-shell/extensions
 UUID=`perl -nle 'if (m{"uuid": "([^"]+)"}) { print $$1 }' metadata.json`
 FILES=\
-	AUTHORS \
+	AUTHORS.md \
 	COPYING \
 	README.md \
 	edit-groups \
