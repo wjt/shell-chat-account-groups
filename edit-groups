@@ -117,7 +117,7 @@ class GroupModel(Gtk.TreeStore, Gtk.TreeDragSource, Gtk.TreeDragDest):
                 # Schedule a save to write out in the new format
                 self.schedule_save_cb()
                 return new_data
-        except IOError, e:
+        except IOError as e:
             return []
 
     def load(self):
@@ -126,11 +126,11 @@ class GroupModel(Gtk.TreeStore, Gtk.TreeDragSource, Gtk.TreeDragDest):
         try:
             with open(self.get_group_file_path(), 'r') as f:
                 data = json.load(f)
-        except IOError, e:
+        except IOError as e:
             # No groups yet I guess
             data = self.try_load_legacy()
-        except ValueError, e:
-            print "hrm: %s" % e
+        except ValueError as e:
+            print ("hrm: %s" % e)
             data = []
 
         for group_dict in data:
@@ -176,7 +176,7 @@ class GroupModel(Gtk.TreeStore, Gtk.TreeDragSource, Gtk.TreeDragDest):
 
         for row in self:
             if not row[GroupModel.COL_IS_GROUP]:
-                print "Eep. Got a top-level account..."
+                print ("Eep. Got a top-level account...")
                 continue
 
             if row[GroupModel.COL_IS_REMAINDER]:
@@ -186,13 +186,13 @@ class GroupModel(Gtk.TreeStore, Gtk.TreeDragSource, Gtk.TreeDragDest):
 
             for child in row.iterchildren():
                 if child[GroupModel.COL_IS_GROUP]:
-                    print "Eep. Nested groups."
+                    print ("Eep. Nested groups.")
                     continue
 
                 path = child[GroupModel.COL_OBJECT_PATH]
 
                 if not path:
-                    print child[GroupModel.COL_NAME]
+                    print (child[GroupModel.COL_NAME])
 
                 paths.append(path)
 
