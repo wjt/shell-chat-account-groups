@@ -23,6 +23,11 @@ import errno
 import json
 from gi.repository import Gtk, GObject, GLib, TelepathyGLib
 
+
+class ModelError(Exception):
+    pass
+
+
 class GroupModel(Gtk.TreeStore, Gtk.TreeDragSource, Gtk.TreeDragDest):
     __gtype_name__ = "ChatAccountGroupModel"
     __gsignals__ = {
@@ -186,8 +191,8 @@ class GroupModel(Gtk.TreeStore, Gtk.TreeDragSource, Gtk.TreeDragDest):
 
         for row in self:
             if not row[GroupModel.COL_IS_GROUP]:
-                print ("Eep. Got a top-level account...")
-                continue
+                raise ModelError("Account '%s' at the top level, not in any group"
+                    % row[GroupModel.COL_NAME])
 
             if row[GroupModel.COL_IS_REMAINDER]:
                 continue
@@ -196,13 +201,14 @@ class GroupModel(Gtk.TreeStore, Gtk.TreeDragSource, Gtk.TreeDragDest):
 
             for child in row.iterchildren():
                 if child[GroupModel.COL_IS_GROUP]:
-                    print ("Eep. Nested groups.")
-                    continue
+                    raise ModelError("Group '%s' nested within group '%s'"
+                        % (child[GroupModel.COL_NAME], row[GroupModel.COL_NAME]))
 
                 path = child[GroupModel.COL_OBJECT_PATH]
 
                 if not path:
-                    print (child[GroupModel.COL_NAME])
+                    raise ModelError("Account '%s' has no associated object path"
+                        % child[GroupModel.COL_NAME])
 
                 paths.append(path)
 
