@@ -59,20 +59,19 @@ class GroupModel(Gtk.TreeStore, Gtk.TreeDragSource, Gtk.TreeDragDest):
         self.load()
 
     def get_group_file_dir(self):
-        return GLib.build_filenamev([
+        return os.path.join(
             GLib.get_user_config_dir(),
-            "shell-chat-account-groups",
-            ])
+            "shell-chat-account-groups")
 
     def get_group_file_path(self):
-        return GLib.build_filenamev([
+        return os.path.join(
             self.get_group_file_dir(),
-            "groups.2.json"])
+            "groups.2.json")
 
     def get_old_group_file_path(self):
-        return GLib.build_filenamev([
+        return os.path.join(
             self.get_group_file_dir(),
-            "groups.json"])
+            "groups.json")
 
     def add_group(self):
         first_iter = self.get_iter_first()
