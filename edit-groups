@@ -27,7 +27,9 @@ class GroupModel(Gtk.TreeStore, Gtk.TreeDragSource, Gtk.TreeDragDest):
     __gtype_name__ = "ChatAccountGroupModel"
     __gsignals__ = {
         'loaded': (GObject.SIGNAL_RUN_FIRST, GObject.TYPE_NONE,
-                   ())
+                   ()),
+        'save-error': (GObject.SIGNAL_RUN_FIRST, GObject.TYPE_NONE,
+                       (object,)),
     }
 
     COL_IS_GROUP = 0
@@ -170,7 +172,10 @@ class GroupModel(Gtk.TreeStore, Gtk.TreeDragSource, Gtk.TreeDragDest):
         if self.save_timeout is None:
             def save_me(*args):
                 self.save_timeout = None
-                self.save()
+                try:
+                    self.save()
+                except Exception as e:
+                    self.emit('save-error', e)
                 return False
             self.save_timeout = GLib.idle_add(save_me)
 
@@ -263,6 +268,7 @@ class Window(Gtk.Window):
         self.store = GroupModel()
         self.view = GroupView(model=self.store)
         self.store.connect('loaded', lambda store: self.view.expand_all())
+        self.store.connect('save-error', self.save_error_cb)
 
         self.sw = Gtk.ScrolledWindow(hscrollbar_policy=Gtk.PolicyType.NEVER)
         self.sw.add(self.view)
@@ -309,6 +315,18 @@ class Window(Gtk.Window):
     def remove_clicked_cb(self, remove):
         model, tree_iter = self.view.get_selection().get_selected()
         model.remove(tree_iter)
+
+    def save_error_cb(self, model, exception):
+        dialog = Gtk.MessageDialog(parent=self,
+            message_type=Gtk.MessageType.ERROR,
+            buttons=Gtk.ButtonsType.CLOSE,
+            message_format="Could not save your account groups")
+        dialog.format_secondary_markup(
+"""Please <a href='https://extensions.gnome.org/errors/report/579'>report a bug</a> and include the following message:
+
+<i>%s</i>""" % GLib.markup_escape_text(str(exception)))
+        dialog.run()
+        dialog.destroy()
 
 class Application(Gtk.Application):
     def __init__(self):
