@@ -18,6 +18,8 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import sys
+import os
+import errno
 import json
 from gi.repository import Gtk, GObject, GLib, TelepathyGLib
 
@@ -56,16 +58,20 @@ class GroupModel(Gtk.TreeStore, Gtk.TreeDragSource, Gtk.TreeDragDest):
 
         self.load()
 
-    def get_group_file_path(self):
+    def get_group_file_dir(self):
         return GLib.build_filenamev([
             GLib.get_user_config_dir(),
             "shell-chat-account-groups",
+            ])
+
+    def get_group_file_path(self):
+        return GLib.build_filenamev([
+            self.get_group_file_dir(),
             "groups.2.json"])
 
     def get_old_group_file_path(self):
         return GLib.build_filenamev([
-            GLib.get_user_config_dir(),
-            "shell-chat-account-groups",
+            self.get_group_file_dir(),
             "groups.json"])
 
     def add_group(self):
@@ -200,6 +206,12 @@ class GroupModel(Gtk.TreeStore, Gtk.TreeDragSource, Gtk.TreeDragDest):
                 "name": row[GroupModel.COL_NAME],
                 "accounts": paths,
             })
+
+        try:
+            os.makedirs(self.get_group_file_dir())
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise
 
         with open(self.get_group_file_path(), 'w') as f:
             json.dump(data, f, indent=4)
