@@ -164,8 +164,8 @@ class GroupModel(Gtk.TreeStore, Gtk.TreeDragSource, Gtk.TreeDragDest):
     def schedule_save_cb(self, *args):
         if self.save_timeout is None:
             def save_me(*args):
-                self.save()
                 self.save_timeout = None
+                self.save()
                 return False
             self.save_timeout = GLib.idle_add(save_me)
 
