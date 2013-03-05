@@ -54,5 +54,5 @@ To make up a tarball for [submission](https://extensions.gnome.org/upload/):
 
 ## TODO
 
-* The editor is ridiculously fragile and buggy.
-* Icon.
+* The editor is quite fragile and buggy.
+* I would like a better icon rather than appropriating one from the theme.

@@ -265,6 +265,8 @@ class Window(Gtk.Window):
     DEFAULT_WIDTH = 300
     DEFAULT_HEIGHT = DEFAULT_WIDTH * GOLDEN_RATIO
 
+    TITLE = 'Edit chat account groups'
+
     def __init__(self):
         Gtk.Window.__init__(self)
 
@@ -272,6 +274,10 @@ class Window(Gtk.Window):
         self.set_position(Gtk.WindowPosition.CENTER)
         self.set_border_width(6)
         self.set_icon_name('avatar-default-symbolic')
+
+        self.set_title(Window.TITLE)
+        # This convinces GNOME Shell to put our title in the top bar.
+        self.set_wmclass(GLib.get_prgname(), Window.TITLE)
 
         self.store = GroupModel()
         self.view = GroupView(model=self.store)
@@ -345,7 +351,7 @@ class Application(Gtk.Application):
         self.window = None
         self.connect('activate', Application.activate)
 
-        GLib.set_application_name('Edit chat account groups')
+        GLib.set_application_name(Window.TITLE)
 
     def activate(self):
         if not self.window:
