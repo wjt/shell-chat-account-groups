@@ -67,6 +67,32 @@ AccountItem.prototype = {
     },
 
     _onPresenceChanged: function(account, presence, status, message) {
+        debug("_onPresenceChanged for", account.get_path_suffix(), presence, status);
+
+        if (status == "") {
+            switch (presence) {
+                case Tp.ConnectionPresenceType.UNSET:
+                    /* Idle doesn't support SimplePresence. When accounts are
+                     * online but don't support SimplePresence, this property comes
+                     * out as Unset. This is documented in the spec (but not in
+                     * the tp-glib docs).
+                     */
+                    status = "online";
+                    break;
+
+                /* In all other cases, status should be a non-empty string. But
+                 * just in case…
+                 */
+                case Tp.ConnectionPresenceType.OFFLINE:
+                    status = "offline";
+                    break;
+
+                default:
+                    status = "something strange (" + presence + ")";
+                    break;
+            }
+        }
+
         this._presenceLabel.text = status;
     },
 };
