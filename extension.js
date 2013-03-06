@@ -28,6 +28,14 @@ const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
 const ExtensionUtils = imports.misc.extensionUtils;
 
+const debugEnabled = true;
+
+function debug() {
+    if (debugEnabled) {
+        global.log(Array.prototype.join.call(arguments, ' '));
+    }
+}
+
 function AccountItem() {
     this._init.apply(this, arguments);
 }
