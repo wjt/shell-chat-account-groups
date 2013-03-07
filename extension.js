@@ -210,7 +210,7 @@ CAGMenu.prototype = {
             let groups = JSON.parse(ret[1]);
             this._createSections(groups);
         } catch (error) {
-            global.log("no configured groups. falling back to one per account");
+            debug("no configured groups. falling back to one per account");
         }
     },
 
@@ -278,7 +278,7 @@ CAGMenu.prototype = {
 
     _groupsEdited: function(monitor, file, other_file, event_type) {
         if (event_type == Gio.FileMonitorEvent.CHANGES_DONE_HINT) {
-            global.log("groups edited!");
+            debug("groups edited!");
             this._loadConfig();
             if (this._amReady) {
                 this._pushAccountsIntoSections();
