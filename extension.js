@@ -28,7 +28,7 @@ const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
 const ExtensionUtils = imports.misc.extensionUtils;
 
-const debugEnabled = true;
+const debugEnabled = false;
 
 function debug() {
     if (debugEnabled) {
