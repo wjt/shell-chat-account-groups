@@ -188,10 +188,10 @@ CAGMenu.prototype = {
         this._accountFileMonitorChangedId = this._accountFileMonitor.connect(
             'changed', Lang.bind(this, this._groupsEdited));
 
-        this._loadConfig();
-
         this._am = Tp.AccountManager.dup();
         this._amReady = false;
+
+        this._loadConfig();
         this._prepare();
     },
 
