@@ -62,8 +62,15 @@ AccountItem.prototype = {
 
         account.connect('presence-changed', Lang.bind(this,
             this._onPresenceChanged));
+        account.connect('notify::connection-status', Lang.bind(this,
+            this._onStatusChanged));
+
         let [presence, status, message] = account.get_current_presence();
         this._onPresenceChanged(account, presence, status, message);
+    },
+
+    _setPresenceLabel: function(text) {
+        this._presenceLabel.text = text;
     },
 
     _onPresenceChanged: function(account, presence, status, message) {
@@ -93,8 +100,20 @@ AccountItem.prototype = {
             }
         }
 
-        this._presenceLabel.text = status;
+        this._setPresenceLabel(status);
     },
+
+    _onStatusChanged: function(account) {
+        try {
+            let [conn_status, reason] = account.get_connection_status();
+
+            if (conn_status == Tp.ConnectionStatus.CONNECTING) {
+                this._setPresenceLabel("connecting\u2026");
+            }
+        } catch (e) {
+            debug("_onStatusChanged threw", e);
+        }
+    }
 };
 
 function AccountGroupSection() {
