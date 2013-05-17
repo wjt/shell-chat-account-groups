@@ -193,8 +193,6 @@ AccountGroupSection.prototype = {
     },
 }
 
-const NUM_ITEMS_BEFORE_OVERFLOWING = 10;
-
 function CAGMenu() {
     this._init();
 }
@@ -206,6 +204,9 @@ CAGMenu.prototype = {
         PanelMenu.SystemStatusButton.prototype._init.call(this, 'avatar-default-symbolic', null);
 
         this._sections = [];
+
+        this._rows = 0;
+        this._overflowItem = null;
 
         this._accountFilePath = GLib.build_filenamev([
             GLib.get_user_config_dir(),
@@ -232,6 +233,8 @@ CAGMenu.prototype = {
     _loadConfig: function() {
         this.menu.removeAll();
         this._sections = [];
+        this._rows = 0;
+        this._overflowItem = null;
 
         try {
             /* Stupid. The first returned value is true. */
@@ -243,28 +246,32 @@ CAGMenu.prototype = {
         }
     },
 
-    _createSections: function(groups) {
-        let height = 0;
-        let container = this.menu;
-        let overflowed = false;
+    _addSection: function(section) {
+        const NUM_ITEMS_BEFORE_OVERFLOWING = 10;
 
-        for (let i = 0; i < groups.length; i++) {
-            if (!overflowed && height > NUM_ITEMS_BEFORE_OVERFLOWING) {
-                var overflow = new PopupMenu.PopupSubMenuMenuItem("More...");
-                this.menu.addMenuItem(overflow);
-                container = overflow.menu;
-                overflowed = true;
+        if (this._rows > NUM_ITEMS_BEFORE_OVERFLOWING) {
+            if (!this._overflowItem) {
+                this._overflowItem = new PopupMenu.PopupSubMenuMenuItem("More...");
+                this.menu.addMenuItem(this._overflowItem);
             }
 
+            this._overflowItem.menu.addMenuItem(section);
+        } else {
+            this.menu.addMenuItem(section);
+            this._rows += section.getMaximumHeight();
+        }
+
+        this._sections.push(section);
+    },
+
+    _createSections: function(groups) {
+        for (let i = 0; i < groups.length; i++) {
             let group = groups[i];
             let groupName = group.name;
             let accounts = group.accounts;
             let section = new AccountGroupSection(this._am, groupName, accounts);
 
-            container.addMenuItem(section);
-            this._sections.push(section);
-
-            height += section.getMaximumHeight();
+            this._addSection(section);
         }
     },
 
@@ -284,23 +291,12 @@ CAGMenu.prototype = {
                 this._sections[i].helloThere(accounts);
             }
         } else {
-            let overflowItem = null;
-
             for (let i = 0; i < accounts.length; i++) {
                 let account = accounts[i];
                 let section = new AccountGroupSection(this._am, account.get_display_name(), [account.get_path_suffix()]);
                 section.helloThere(accounts);
 
-                if (i < NUM_ITEMS_BEFORE_OVERFLOWING) {
-                    this.menu.addMenuItem(section);
-                } else {
-                    if (!overflowItem) {
-                        overflowItem = new PopupMenu.PopupSubMenuMenuItem("More...");
-                        this.menu.addMenuItem(overflowItem);
-                    }
-
-                    overflowItem.menu.addMenuItem(section);
-                }
+                this._addSection(section);
             }
         }
 
