@@ -136,6 +136,14 @@ AccountGroupSection.prototype = {
         this._accounts = [];
     },
 
+    getMaximumHeight: function() {
+        if (this._accountIDs.length > 1) {
+            return this._accountIDs.length + 1;
+        } else {
+            return 1;
+        }
+    },
+
     helloThere: function(accounts) {
         let state = false;
 
@@ -184,6 +192,8 @@ AccountGroupSection.prototype = {
 
     },
 }
+
+const NUM_ITEMS_BEFORE_OVERFLOWING = 10;
 
 function CAGMenu() {
     this._init();
@@ -234,13 +244,27 @@ CAGMenu.prototype = {
     },
 
     _createSections: function(groups) {
+        let height = 0;
+        let container = this.menu;
+        let overflowed = false;
+
         for (let i = 0; i < groups.length; i++) {
+            if (!overflowed && height > NUM_ITEMS_BEFORE_OVERFLOWING) {
+                var overflow = new PopupMenu.PopupSubMenuMenuItem("More...");
+                this.menu.addMenuItem(overflow);
+                container = overflow.menu;
+                overflowed = true;
+            }
+
             let group = groups[i];
             let groupName = group.name;
             let accounts = group.accounts;
             let section = new AccountGroupSection(this._am, groupName, accounts);
-            this.menu.addMenuItem(section);
+
+            container.addMenuItem(section);
             this._sections.push(section);
+
+            height += section.getMaximumHeight();
         }
     },
 
@@ -260,7 +284,6 @@ CAGMenu.prototype = {
                 this._sections[i].helloThere(accounts);
             }
         } else {
-            const NUM_ACCOUNTS_BEFORE_OVERFLOWING = 10;
             let overflowItem = null;
 
             for (let i = 0; i < accounts.length; i++) {
@@ -268,7 +291,7 @@ CAGMenu.prototype = {
                 let section = new AccountGroupSection(this._am, account.get_display_name(), [account.get_path_suffix()]);
                 section.helloThere(accounts);
 
-                if (i < NUM_ACCOUNTS_BEFORE_OVERFLOWING) {
+                if (i < NUM_ITEMS_BEFORE_OVERFLOWING) {
                     this.menu.addMenuItem(section);
                 } else {
                     if (!overflowItem) {
