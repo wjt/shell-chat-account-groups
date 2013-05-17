@@ -291,6 +291,13 @@ CAGMenu.prototype = {
                 this._sections[i].helloThere(accounts);
             }
         } else {
+            accounts.sort(function(a, b) {
+                var a_name = a.get_display_name().toLocaleLowerCase(),
+                    b_name = b.get_display_name().toLocaleLowerCase();
+
+                return a_name.localeCompare(b_name);
+            });
+
             for (let i = 0; i < accounts.length; i++) {
                 let account = accounts[i];
                 let section = new AccountGroupSection(this._am, account.get_display_name(), [account.get_path_suffix()]);

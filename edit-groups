@@ -164,7 +164,7 @@ class GroupModel(Gtk.TreeStore, Gtk.TreeDragSource, Gtk.TreeDragDest):
         if remainder:
             group_name = "Ungrouped accounts"
             group_iter = self.append(None, (True, group_name, '', True))
-            for path in remainder:
+            for path in sorted(remainder, key=lambda path: self.accounts[path].get_display_name().lower()):
                 account = self.accounts[path]
                 self.append(group_iter, (False, account.get_display_name(), path, True))
 
