@@ -251,7 +251,7 @@ CAGMenu.prototype = {
 
         if (this._rows > NUM_ITEMS_BEFORE_OVERFLOWING) {
             if (!this._overflowItem) {
-                this._overflowItem = new PopupMenu.PopupSubMenuMenuItem("More...");
+                this._overflowItem = new PopupMenu.PopupSubMenuMenuItem("More\u2026");
                 this.menu.addMenuItem(this._overflowItem);
             }
 
