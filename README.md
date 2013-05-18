@@ -13,10 +13,9 @@ to turn pre-defined groups of [Telepathy][] accounts on and off.
 
 ![Screenshot](http://willthompson.co.uk/misc/account-groups.png)
 
-By default, it shows you one switch per account. I have 32 accounts and a
-normal-sized monitor so as you can imagine this doesn't work for me, so you can
-group ’em to your heart's content by choosing *Chat Account Group Settings* in
-the menu.
+By default, it shows you one switch per account. I have 39 accounts, so as you
+can imagine this doesn't work for me; to cope, you can group ’em to your
+heart's content by choosing *Chat Account Group Settings* in the menu.
 
 [Collabora]: http://collabora.com/
 [Telepathy]: http://telepathy.freedesktop.org/
