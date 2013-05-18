@@ -11,7 +11,7 @@ when testing IM-related stuff I need to turn on my test accounts. So here's a
 Gnome Shell extension which gives you a menu in the panel with little sliders
 to turn pre-defined groups of [Telepathy][] accounts on and off.
 
-![Screenshot](http://willthompson.co.uk/misc/account-groups.png)
+![Screenshot](http://willthompson.co.uk/misc/account-groups-1.5.png)
 
 By default, it shows you one switch per account. I have 39 accounts, so as you
 can imagine this doesn't work for me; to cope, you can group ’em to your
