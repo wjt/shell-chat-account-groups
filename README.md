@@ -54,5 +54,6 @@ To make up a tarball for [submission](https://extensions.gnome.org/upload/):
 
 ## TODO
 
-* The editor is quite fragile and buggy.
-* I would like a better icon rather than appropriating one from the theme.
+See [open issues][] on GitHub.
+
+[open issues]: https://github.com/wjt/shell-chat-account-groups/issues?state=open
