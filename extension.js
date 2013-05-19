@@ -310,7 +310,7 @@ CAGMenu.prototype = {
         let separator = new PopupMenu.PopupSeparatorMenuItem();
         this.menu.addMenuItem(separator);
 
-        this.menu.addAction("Chat Account Group Settings",
+        this.menu.addAction("Edit Chat Account Groups",
             Lang.bind(this, this._launchSettings));
     },
 
