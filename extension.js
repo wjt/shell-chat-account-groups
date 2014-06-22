@@ -52,7 +52,7 @@ AccountItem.prototype = {
         this.actor.can_focus = false;
 
         this._presenceBin = new St.Bin({ x_align: St.Align.END });
-        this.addActor(this._presenceBin,
+        this.actor.add(this._presenceBin,
                       { expand: true, span: -1, align: St.Align.END });
 
         this._presenceLabel = new St.Label({ text: '\u26f7',
@@ -193,15 +193,19 @@ AccountGroupSection.prototype = {
     },
 }
 
-function CAGMenu() {
-    this._init();
-}
-
-CAGMenu.prototype = {
-    __proto__: PanelMenu.SystemStatusButton.prototype,
+let CAGMenu = new Lang.Class({
+    Name: 'CAGMenu',
+    Extends: PanelMenu.Button,
 
     _init: function() {
-        PanelMenu.SystemStatusButton.prototype._init.call(this, 'avatar-default-symbolic', null);
+        this.parent(null, 'Chat Account Groups');
+
+        this._hbox = new St.BoxLayout({ style_class: 'panel-status-menu-box' });
+        this._hbox.add_child(new St.Icon({ style_class: 'system-status-icon',
+                                           icon_name: 'avatar-default-symbolic' }));
+        this._hbox.add_child(PopupMenu.arrowIcon(St.Side.BOTTOM));
+
+        this.actor.add_child(this._hbox);
 
         this._sections = [];
 
@@ -330,7 +334,7 @@ CAGMenu.prototype = {
             }
         }
     },
-};
+});
 
 function init(metadata) {
 }
@@ -339,7 +343,7 @@ let groupsMenu;
 
 function enable() {
     groupsMenu = new CAGMenu;
-    Main.panel.addToStatusArea('chat-account-groups-menu', groupsMenu);
+    Main.panel.addToStatusArea('chat-account-groups-menu', groupsMenu, 1, 'right');
 }
 
 function disable() {
