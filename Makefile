@@ -7,6 +7,7 @@ FILES=\
 	edit-groups \
 	extension.js \
 	metadata.json \
+	prefs.js \
 	$(null)
 
 SCHEMA="org.gnome.shell"

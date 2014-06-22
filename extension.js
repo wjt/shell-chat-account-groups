@@ -313,9 +313,7 @@ let CAGMenu = new Lang.Class({
 
     _launchSettings: function(event) {
         let meta = ExtensionUtils.getCurrentExtension();
-        let path = meta.path + "/edit-groups";
-
-        GLib.spawn_async(null, ["python", path], null, GLib.SpawnFlags.SEARCH_PATH, null, null, null, null);
+        GLib.spawn_async(null, ["gnome-shell-extension-prefs", meta.uuid], null, GLib.SpawnFlags.SEARCH_PATH, null, null, null, null);
     },
 
     _groupsEdited: function(monitor, file, other_file, event_type) {
