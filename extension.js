@@ -36,16 +36,12 @@ function debug() {
     }
 }
 
-function AccountItem() {
-    this._init.apply(this, arguments);
-}
-
-AccountItem.prototype = {
-    __proto__: PopupMenu.PopupMenuItem.prototype,
+let AccountItem = new Lang.Class({
+    Name: 'AccountItem',
+    Extends: PopupMenu.PopupMenuItem,
 
     _init: function(account) {
-        PopupMenu.PopupMenuItem.prototype._init.call(this,
-            account.get_display_name());
+        this.parent(account.get_display_name());
 
         this.label.add_style_class_name('popup-inactive-menu-item');
         this.actor.reactive = false;
@@ -114,17 +110,14 @@ AccountItem.prototype = {
             debug("_onStatusChanged threw", e);
         }
     }
-};
+});
 
-function AccountGroupSection() {
-    this._init.apply(this, arguments);
-}
-
-AccountGroupSection.prototype = {
-    __proto__: PopupMenu.PopupMenuSection.prototype,
+let AccountGroupSection = new Lang.Class({
+    Name: 'AccountGroupSection',
+    Extends: PopupMenu.PopupMenuSection,
 
     _init: function(am, groupName, accountIDs) {
-        PopupMenu.PopupMenuSection.prototype._init.call(this);
+        this.parent();
 
         this._am = am;
 
@@ -191,7 +184,7 @@ AccountGroupSection.prototype = {
         }
 
     },
-}
+});
 
 let CAGMenu = new Lang.Class({
     Name: 'CAGMenu',
